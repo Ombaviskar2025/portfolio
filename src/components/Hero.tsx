@@ -12,7 +12,6 @@ export default function Hero({
   onSecondary: () => void;
 }) {
   const [imgError, setImgError] = useState(false);
-  const fallbackPhoto = typeof window !== "undefined" ? localStorage.getItem("om-photo") : null;
 
   return (
     <header
@@ -76,8 +75,6 @@ export default function Hero({
                 onError={() => setImgError(true)}
                 className="h-full w-full object-cover object-[center_top]"
               />
-            ) : fallbackPhoto ? (
-              <img src={fallbackPhoto} alt={profile.name} className="h-full w-full object-cover object-[center_top]" />
             ) : (
               <div className="t-om flex h-full w-full items-center justify-center font-display text-[clamp(80px,12vw,150px)] tracking-[0.04em] text-white/90">
                 OM
