@@ -20,10 +20,7 @@ export function Tilt({ children, className = "", max = 8 }: { children: ReactNod
     rotY.set(px * max * 2);
     rotX.set(-py * max * 2);
   };
-  const reset = () => {
-    rotX.set(0);
-    rotY.set(0);
-  };
+  const reset = () => { rotX.set(0); rotY.set(0); };
 
   return (
     <motion.div
@@ -59,10 +56,7 @@ export function Magnetic({ children, className = "" }: { children: ReactNode; cl
         x.set((e.clientX - (r.left + r.width / 2)) * 0.25);
         y.set((e.clientY - (r.top + r.height / 2)) * 0.25);
       }}
-      onMouseLeave={() => {
-        x.set(0);
-        y.set(0);
-      }}
+      onMouseLeave={() => { x.set(0); y.set(0); }}
     >
       {children}
     </motion.div>

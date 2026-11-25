@@ -1,177 +1,119 @@
-import { useState } from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
-import { Magnetic } from "./fx";
-import { profile } from "../data/portfolio";
+import { useRef, useState } from "react";
+import { motion } from "framer-motion";
+import { profile, type ViewerProfile } from "../data/portfolio";
 
-const chips = [
-  { label: "React", pos: "left-[2%] top-[18%]", delay: "0s" },
-  { label: "Node.js", pos: "right-[0%] top-[28%]", delay: "0.8s" },
-  { label: "MongoDB", pos: "left-[6%] bottom-[16%]", delay: "1.6s" },
-  { label: "JWT", pos: "right-[8%] bottom-[10%]", delay: "2.2s" },
-];
+export default function Hero({
+  viewerProfile,
+  onPlay,
+  onSecondary,
+}: {
+  viewerProfile: ViewerProfile;
+  onPlay: () => void;
+  onSecondary: () => void;
+}) {
+  const [hasPhoto, setHasPhoto] = useState(() => !!localStorage.getItem("om-photo"));
+  const fileRef = useRef<HTMLInputElement>(null);
 
-const particles = Array.from({ length: 18 }, (_, i) => ({
-  left: `${(i * 53) % 100}%`,
-  top: `${30 + ((i * 37) % 65)}%`,
-  delay: `${(i % 7) * 0.9}s`,
-  size: 2 + (i % 3),
-}));
-
-export default function Hero({ onPlay, onResume }: { onPlay: () => void; onResume: () => void }) {
-  const reduce = useReducedMotion();
-  const mx = useMotionValue(0);
-  const my = useMotionValue(0);
-  const sx = useSpring(mx, { stiffness: 80, damping: 18 });
-  const sy = useSpring(my, { stiffness: 80, damping: 18 });
-  const portraitX = useTransform(sx, (v) => v * -18);
-  const portraitY = useTransform(sy, (v) => v * -12);
-  const chipX = useTransform(sx, (v) => v * 26);
-  const chipY = useTransform(sy, (v) => v * 18);
-  const onMove = (e: React.MouseEvent) => {
-    if (reduce) return;
-    mx.set(e.clientX / window.innerWidth - 0.5);
-    my.set(e.clientY / window.innerHeight - 0.5);
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 900;
+        const s = Math.min(1, max / Math.max(img.width, img.height));
+        const c = document.createElement("canvas");
+        c.width = Math.round(img.width * s);
+        c.height = Math.round(img.height * s);
+        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
+        localStorage.setItem("om-photo", c.toDataURL("image/jpeg", 0.86));
+        setHasPhoto(true);
+      };
+      img.src = r.result as string;
+    };
+    r.readAsDataURL(f);
+    e.target.value = "";
   };
-  const [hasPhoto, setHasPhoto] = useState(true);
+
+  const photoSrc = hasPhoto ? localStorage.getItem("om-photo") : null;
 
   return (
-    <section id="top" onMouseMove={onMove} className="grain relative flex min-h-screen items-center overflow-hidden">
-      {/* backdrop */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_75%_40%,rgba(34,211,238,0.22),transparent_55%),radial-gradient(ellipse_at_10%_90%,rgba(251,191,36,0.10),transparent_50%)]" />
-      <div className="absolute inset-0 bg-gradient-to-t from-ink via-transparent to-ink/60" />
-      {!reduce && (
-        <>
-          <div className="pointer-events-none absolute inset-0 overflow-hidden">
-            <div
-              className="absolute top-1/3 h-[2px] w-1/3 bg-gradient-to-r from-transparent via-accent/70 to-transparent"
-              style={{ animation: "streak 6s linear infinite" }}
-            />
-            <div
-              className="absolute top-2/3 h-px w-1/4 bg-gradient-to-r from-transparent via-gold/60 to-transparent"
-              style={{ animation: "streak 8s linear 2s infinite" }}
-            />
-          </div>
-          {particles.map((p, i) => (
-            <span
-              key={i}
-              className="absolute rounded-full bg-accent/70"
-              style={{
-                left: p.left,
-                top: p.top,
-                width: p.size,
-                height: p.size,
-                animation: `drift 6s ease-out ${p.delay} infinite`,
-              }}
-            />
-          ))}
-        </>
-      )}
-
-      <div className="relative z-10 mx-auto grid w-full max-w-7xl items-center gap-10 px-5 pb-16 pt-28 md:grid-cols-[1.2fr_1fr] md:px-10">
+    <header
+      id="home"
+      data-sec="home"
+      className="relative flex min-h-[min(86vh,760px)] items-center overflow-hidden pb-[60px] pt-[calc(90px+env(safe-area-inset-top,0px))]"
+      style={{
+        background:
+          "radial-gradient(700px 520px at 78% 40%, rgba(229,9,20,0.42), transparent 70%), radial-gradient(500px 400px at 10% 90%, rgba(60,20,120,0.28), transparent 70%), #07090d",
+      }}
+    >
+      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-gradient-to-t from-bg to-transparent" />
+      <div className="relative z-[2] mx-auto grid w-full max-w-[1280px] items-center gap-[30px] px-4 md:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] md:px-6">
         <div>
-          <motion.p
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-center gap-3 text-xs font-semibold uppercase tracking-[0.35em] text-accent"
-          >
-            <span className="font-display text-2xl tracking-normal text-accent">O</span> Original series
-          </motion.p>
+          <div className="mb-4 flex flex-wrap gap-2">
+            <span className="rounded bg-red px-2.5 py-1 text-[11.5px] font-semibold text-white">MERN</span>
+            <span className="rounded border border-line bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-[#d5d9e0]">MCA · 2025–2027</span>
+            <span className="rounded border border-line bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-[#d5d9e0]">2 Originals</span>
+            <span className="rounded border border-line bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-[#d5d9e0]">4 Certifications</span>
+            <span className="rounded border border-line bg-white/[0.04] px-2.5 py-1 text-[11.5px] font-semibold text-[#d5d9e0]">Pune, India</span>
+          </div>
           <motion.h1
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1, duration: 0.7 }}
-            className="font-display text-7xl leading-[0.9] tracking-wide md:text-9xl"
+            transition={{ duration: 0.7 }}
+            className="disp text-[clamp(54px,11.5vw,170px)] text-white [text-shadow:0_8px_40px_rgba(0,0,0,0.6)]"
           >
-            {profile.firstName}
-            <br />
-            <span className="text-accent">{profile.lastName}</span>
+            {profile.firstName} <span className="text-red">B</span>AVISKAR
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.35 }}
-            className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-300"
-          >
-            <span className="font-bold text-green-400">98% Match</span>
-            <span>2025</span>
-            <span className="rounded border border-slate-500 px-1.5 text-xs">MERN</span>
-            <span>2 Originals</span>
-            <span>{profile.location}</span>
-          </motion.p>
-          <motion.p
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.45 }}
-            className="mt-5 max-w-xl text-lg text-slate-200"
-          >
-            {profile.title}. {profile.tagline}
-          </motion.p>
-          <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.6 }}
-            className="mt-8 flex flex-wrap gap-3"
-          >
-            <Magnetic>
-              <button
-                onClick={onPlay}
-                className="flex items-center gap-2 rounded-md bg-white px-7 py-3 font-bold text-black transition hover:bg-accent"
-              >
-                ▶ Play Intro
-              </button>
-            </Magnetic>
-            <a
-              href="#originals"
-              className="flex items-center gap-2 rounded-md bg-white/15 px-7 py-3 font-semibold backdrop-blur transition hover:bg-white/25"
-            >
-              ⓘ More Info
-            </a>
+          <div className="mb-5 mt-1.5 text-xs font-bold tracking-[0.5em] text-red2">THE SERIES</div>
+          <div className="mb-2.5 text-[12.5px] font-bold uppercase tracking-[0.2em]">
+            Full-Stack Developer · MERN · Java
+          </div>
+          <p className="mb-6 max-w-[560px] text-[16.5px] text-[#c9cfd9]">{profile.summary}</p>
+          <div className="flex flex-wrap gap-3">
             <button
-              onClick={onResume}
-              className="flex items-center gap-2 rounded-md border border-line px-7 py-3 font-semibold text-slate-300 transition hover:border-accent hover:text-white"
+              onClick={onPlay}
+              className="inline-flex items-center gap-2.5 rounded-[6px] bg-fg px-6 py-3 font-bold text-black transition hover:bg-[#cfcfcf]"
             >
-              Resume
+              <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]"><path d="M7 4v16l13-8z" /></svg>
+              {viewerProfile.primary}
             </button>
-          </motion.div>
+            <button
+              onClick={onSecondary}
+              className="inline-flex items-center gap-2.5 rounded-[6px] bg-[rgba(109,109,110,0.55)] px-6 py-3 font-bold text-white backdrop-blur-[6px] transition hover:bg-[rgba(109,109,110,0.35)]"
+            >
+              {viewerProfile.secondary}
+            </button>
+          </div>
         </div>
 
-        {/* portrait */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.3, duration: 0.8 }}
-          className="relative mx-auto aspect-square w-full max-w-md"
-        >
-          <div className="absolute inset-6 rounded-full bg-gradient-to-br from-accent/40 via-sky-600/20 to-transparent blur-2xl" />
-          <motion.div className="relative h-full w-full" style={reduce ? undefined : { x: portraitX, y: portraitY }}>
-          {hasPhoto ? (
-            <img
-              src="/assets/portrait.png"
-              alt={profile.name}
-              onError={() => setHasPhoto(false)}
-              className="relative h-full w-full object-contain drop-shadow-[0_0_40px_rgba(34,211,238,0.3)]"
-            />
-          ) : (
-            <div className="relative flex h-full w-full items-center justify-center rounded-full border border-accent/30 bg-panel/60">
-              <span className="font-display text-[10rem] leading-none tracking-wider text-accent/90 md:text-[12rem]">
-                OB
-              </span>
-            </div>
-          )}
-          </motion.div>
-          <motion.div className="pointer-events-none absolute inset-0" style={reduce ? undefined : { x: chipX, y: chipY }}>
-            {chips.map((c) => (
-              <span
-                key={c.label}
-                className={`absolute ${c.pos} rounded-full border border-accent/30 bg-ink/70 px-3 py-1 text-xs font-semibold text-accent backdrop-blur`}
-                style={reduce ? undefined : { animation: `floaty 5s ease-in-out ${c.delay} infinite` }}
-              >
-                {c.label}
-              </span>
-            ))}
-          </motion.div>
-        </motion.div>
+        <div className="justify-self-center md:justify-self-end">
+          <div
+            className="relative aspect-[4/5] w-[min(100%,400px)] cursor-pointer overflow-hidden rounded-[18px] shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06),0_0_90px_rgba(229,9,20,0.28)]"
+            style={{ background: "linear-gradient(160deg, #1a0f14, #2a0c12)" }}
+            onClick={() => fileRef.current?.click()}
+            role="button"
+            tabIndex={0}
+            aria-label="Add your photo"
+          >
+            {photoSrc ? (
+              <img src={photoSrc} alt={profile.name} className="h-full w-full object-cover object-[center_top]" />
+            ) : (
+              <div className="t-om flex h-full w-full items-center justify-center font-display text-[clamp(80px,12vw,150px)] tracking-[0.04em] text-white/90">
+                OM
+              </div>
+            )}
+            <span className={`absolute inset-x-3 bottom-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs font-semibold backdrop-blur-[6px] transition-opacity ${hasPhoto ? "opacity-0 hover:opacity-100" : "opacity-100"}`}>
+              Click to add your photo
+            </span>
+          </div>
+          <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
+        </div>
       </div>
-    </section>
+      <div className="absolute bottom-7 right-4 z-[3] max-w-[300px] rounded-lg border border-line bg-[rgba(20,24,32,0.85)] px-3.5 py-2.5 text-xs text-[#cdd3dd] backdrop-blur-lg max-md:static max-md:mx-4 max-md:mt-5 max-md:max-w-none">
+        Now watching as <b className="text-white">{viewerProfile.name}</b>: {viewerProfile.msg}.
+      </div>
+    </header>
   );
 }

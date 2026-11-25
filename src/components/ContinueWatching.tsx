@@ -1,45 +1,78 @@
-import { motion } from "framer-motion";
-import { continueWatching } from "../data/portfolio";
-import { SectionTitle } from "./ui";
+import { useEffect, useRef, useState } from "react";
+import { episodes } from "../data/portfolio";
+
+function getVisited(): Record<string, boolean> {
+  try { return JSON.parse(localStorage.getItem("om-visited") || "{}"); } catch { return {}; }
+}
 
 export default function ContinueWatching() {
+  const railRef = useRef<HTMLDivElement>(null);
+  const [visited, setVisited] = useState(getVisited);
+
+  useEffect(() => {
+    const els = document.querySelectorAll("[data-sec]");
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((en) => {
+          if (!en.isIntersecting) return;
+          const s = (en.target as HTMLElement).dataset.sec;
+          if (s && !visited[s]) {
+            const next = { ...visited, [s]: true };
+            setVisited(next);
+            localStorage.setItem("om-visited", JSON.stringify(next));
+          }
+        });
+      },
+      { rootMargin: "-40% 0px -55% 0px" }
+    );
+    els.forEach((el) => obs.observe(el));
+    return () => obs.disconnect();
+  }, [visited]);
+
+  const scroll = (dir: number) => {
+    railRef.current?.scrollBy({ left: dir * 330, behavior: "smooth" });
+  };
+
   return (
-    <section className="mx-auto max-w-7xl px-5 pb-6 pt-4 md:px-10">
-      <SectionTitle kicker="Pick up where I left off" title="Continue Watching" />
-      <div className="rail flex gap-4 overflow-x-auto pb-4">
-        {continueWatching.map((c, i) => (
-          <motion.div
-            key={c.title}
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: i * 0.08 }}
-            whileHover={{ y: -6 }}
-            className="w-64 shrink-0 overflow-hidden rounded-lg border border-line bg-panel md:w-72"
-          >
-            <div className={`relative flex h-36 items-center justify-center bg-gradient-to-br ${c.accent}`}>
-              <span className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-white/80 bg-black/30 text-lg backdrop-blur">
-                ▶
+    <section className="mx-auto max-w-[1280px] px-4 pb-2 pt-2.5 md:px-6" data-sec="rail">
+      <h2 className="mb-3.5 text-xl font-bold tracking-tight">Continue Exploring</h2>
+      <div className="group relative">
+        <button
+          onClick={() => scroll(-1)}
+          className="absolute bottom-[26px] left-0 top-0 z-[5] grid w-11 place-items-center bg-gradient-to-r from-[rgba(7,9,13,0.9)] to-transparent text-[34px] opacity-0 transition group-hover:opacity-100 hover:pointer-events-none max-md:hidden"
+          aria-label="Scroll left"
+        >‹</button>
+        <div
+          ref={railRef}
+          className="rail flex gap-3.5 overflow-x-auto scroll-snap-x mandatory pb-[26px] pt-3"
+        >
+          {episodes.map((ep) => (
+            <button
+              key={ep.s}
+              onClick={() => {
+                const el = document.getElementById(ep.s);
+                if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+              }}
+              className={`${ep.g} group/card relative flex aspect-[16/10] w-[clamp(240px,26vw,320px)] shrink-0 scroll-snap-align-start flex-col justify-end overflow-hidden rounded-[10px] border border-white/[0.08] p-4 text-left transition-all duration-200 hover:z-[3] hover:scale-[1.06] hover:shadow-[0_18px_50px_rgba(0,0,0,0.7),0_0_0_2px_rgba(255,255,255,0.7)]`}
+            >
+              <span className="absolute right-3 top-3 grid h-[30px] w-[30px] place-items-center rounded-full border-[1.5px] border-white/70 bg-black/55 text-[11px] opacity-0 transition group-hover/card:opacity-100">▶</span>
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] opacity-85">EPISODE {ep.n}</span>
+              <span className="disp mt-1 text-[30px] leading-none">{ep.t}</span>
+              <span className="mt-1 text-xs opacity-80">{ep.d}</span>
+              <span className="absolute inset-x-0 bottom-0 h-1 bg-white/20">
+                <i
+                  className="block h-full bg-red transition-[width] duration-500"
+                  style={{ width: visited[ep.s] ? "100%" : "0" }}
+                />
               </span>
-              <span className="absolute right-2 top-2 rounded bg-black/60 px-1.5 py-0.5 text-[10px] font-semibold">
-                {c.progress === 100 ? "WATCHED" : `${c.progress}%`}
-              </span>
-            </div>
-            <div className="h-1 bg-white/10">
-              <motion.div
-                className="h-full bg-accent"
-                initial={{ width: 0 }}
-                whileInView={{ width: `${c.progress}%` }}
-                viewport={{ once: true }}
-                transition={{ duration: 1.1, delay: 0.2 + i * 0.08 }}
-              />
-            </div>
-            <div className="p-3">
-              <p className="font-semibold">{c.title}</p>
-              <p className="text-xs text-slate-400">{c.sub}</p>
-            </div>
-          </motion.div>
-        ))}
+            </button>
+          ))}
+        </div>
+        <button
+          onClick={() => scroll(1)}
+          className="absolute bottom-[26px] right-0 top-0 z-[5] grid w-11 place-items-center bg-gradient-to-l from-[rgba(7,9,13,0.9)] to-transparent text-[34px] opacity-0 transition group-hover:opacity-100 max-md:hidden"
+          aria-label="Scroll right"
+        >›</button>
       </div>
     </section>
   );

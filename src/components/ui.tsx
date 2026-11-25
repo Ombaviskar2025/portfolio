@@ -1,3 +1,4 @@
+// Utility components - minimal stubs since the new theme uses inline styling
 import { motion, useReducedMotion } from "framer-motion";
 import type { ReactNode } from "react";
 
@@ -21,15 +22,6 @@ export function Reveal({
     >
       {children}
     </motion.div>
-  );
-}
-
-export function SectionTitle({ kicker, title }: { kicker: string; title: string }) {
-  return (
-    <div className="mb-8">
-      <p className="mb-1 text-xs font-semibold uppercase tracking-[0.3em] text-accent">{kicker}</p>
-      <h2 className="font-display text-5xl tracking-wide md:text-6xl">{title}</h2>
-    </div>
   );
 }
 

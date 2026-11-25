@@ -1,390 +1,619 @@
 import { useEffect, useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
-  certifications,
   profile,
   projects,
-  seasons,
-  skillEvidence,
-  skillGroups,
-  stats,
+  certs,
+  CORE,
+  skillCategories,
   topPicks,
+  stats,
+  trailerScenes,
+  getResumeText,
+  episodes,
   type Project,
 } from "../data/portfolio";
-import { Chip, Reveal, SectionTitle } from "./ui";
-import { Tilt } from "./fx";
-import { useDesktop, useFinePointer, useReducedMotionPref } from "../hooks";
 
-const wrap = "mx-auto max-w-7xl px-5 md:px-10";
+const wrap = "mx-auto max-w-[1280px] px-4 md:px-6";
 
-/* ---------- About ---------- */
-export function About() {
+/* ─── helpers ─── */
+function toast(msg: string) {
+  let t = document.getElementById("om-toast");
+  if (!t) {
+    t = document.createElement("div");
+    t.id = "om-toast";
+    t.style.cssText =
+      "position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:#fff;color:#000;font-weight:600;font-size:13.5px;padding:11px 18px;border-radius:8px;z-index:130;opacity:0;pointer-events:none;transition:.3s;max-width:calc(100% - 32px)";
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = "1";
+  t.style.transform = "translate(-50%,0)";
+  clearTimeout((t as any)._t);
+  (t as any)._t = setTimeout(() => {
+    t!.style.opacity = "0";
+    t!.style.transform = "translate(-50%,20px)";
+  }, 2400);
+}
+
+function copyText(txt: string, msg?: string) {
+  navigator.clipboard.writeText(txt).catch(() => {
+    const a = document.createElement("textarea");
+    a.value = txt;
+    a.style.cssText = "position:fixed;opacity:0";
+    document.body.appendChild(a);
+    a.select();
+    document.execCommand("copy");
+    a.remove();
+  });
+  toast(msg || "Copied");
+}
+
+function initials(s: string) {
+  const w = s.replace(/\.js$/i, "").split(/[\s.]+/);
+  return (w.length > 1 ? w[0][0] + w[1][0] : s.slice(0, 2)).toUpperCase();
+}
+
+/* ─── Journey ─── */
+export function Journey() {
   return (
-    <section id="about" className={`${wrap} py-20`}>
-      <SectionTitle kicker="Episode 1" title="The Pilot" />
-      <div className="grid gap-10 md:grid-cols-[1.4fr_1fr]">
-        <Reveal>
-          <p className="text-lg leading-relaxed text-slate-300">{profile.summary}</p>
-          <div className="mt-8 grid grid-cols-3 gap-4">
-            {stats.map((s) => (
-              <div key={s.label} className="rounded-lg border border-line bg-panel p-4">
-                <p className="font-display text-4xl text-accent">{s.value}</p>
-                <p className="mt-1 text-xs text-slate-400">{s.label}</p>
-              </div>
-            ))}
-          </div>
-        </Reveal>
-        <Reveal delay={0.1}>
-          <dl className="space-y-4 rounded-xl border border-line bg-panel p-6 text-sm">
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="journey" data-sec="journey">
+      <div className="eyebrow">Episode 03</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">My Journey</h2>
+      <p className="mb-8 max-w-[620px] text-muted">
+        Two seasons so far: a BCA that turned into two shipped apps, and an MCA that is still airing.
+      </p>
+      <div className="grid gap-5 md:grid-cols-2">
+        {/* Season 1 */}
+        <div className="rounded-[14px] border border-line bg-panel p-6">
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-red2">Season 1</h3>
+          <h4 className="mt-1.5 text-[22px] font-bold tracking-tight">BCA · G.H. Raisoni College of Engineering, Jalgaon</h4>
+          <div className="text-[13px] text-muted">2022 – 2025 · 7.67 / 10</div>
+          <ul className="mt-5 flex list-none flex-col gap-5 border-l-2 border-line pl-5">
             {[
-              ["Starring", profile.name],
-              ["Genre", "Full-Stack · MERN · Cloud Deployment"],
-              ["Filmed in", profile.location],
-              ["Currently", "MCA, IMCC Pune (2025 – 2027)"],
-            ].map(([k, v]) => (
-              <div key={k}>
-                <dt className="text-xs uppercase tracking-widest text-slate-500">{k}</dt>
-                <dd className="mt-0.5 text-slate-200">{v}</dd>
-              </div>
+              { year: "2022", title: "Pilot", desc: "Starts the Bachelor of Computer Applications. Builds the base in data structures, OOP and databases." },
+              { year: "Jan 2025", title: "HRConnect goes live", desc: "Ships a MERN employee management system: Vercel frontend, Render API, MongoDB Atlas." },
+              { year: "Jun 2025", title: "Ruh Dance Production goes live", desc: "Deploys an event showcase and media gallery with JWT refresh-token rotation." },
+              { year: "2025", title: "Season finale", desc: "Graduates with a BCA, 7.67 / 10." },
+            ].map((item) => (
+              <li key={item.title} className="relative">
+                <span className="absolute -left-[27px] top-1.5 h-3 w-3 rounded-full border-2 border-red bg-bg" />
+                <time className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">{item.year}</time>
+                <b className="mt-0.5 block">{item.title}</b>
+                <span className="text-[13.5px] text-muted">{item.desc}</span>
+              </li>
             ))}
-          </dl>
-        </Reveal>
+          </ul>
+        </div>
+        {/* Season 2 */}
+        <div className="rounded-[14px] border border-line bg-panel p-6">
+          <h3 className="text-xs font-bold uppercase tracking-[0.2em] text-red2">Season 2 · Now airing</h3>
+          <h4 className="mt-1.5 text-[22px] font-bold tracking-tight">MCA · M.E. Society's IMCC, Kothrud, Pune</h4>
+          <div className="text-[13px] text-muted">2025 – 2027</div>
+          <ul className="mt-5 flex list-none flex-col gap-5 border-l-2 border-line pl-5">
+            {[
+              { year: "2025 – Now", title: "Master of Computer Applications", desc: "Deepening Data Structures, OOP and DBMS while building full-stack projects.", now: true },
+              { year: "Ongoing", title: "Certifications", desc: "TCS iON NQT, HackerRank SQL Gold, Meta Front-End Developer, AI Fundamentals." },
+              { year: "2027", title: "Next episode", desc: "Graduating with an MCA and looking for a full-stack developer role." },
+            ].map((item) => (
+              <li key={item.title} className="relative">
+                <span className={`absolute -left-[27px] top-1.5 h-3 w-3 rounded-full border-2 border-red ${item.now ? "bg-red shadow-[0_0_0_5px_rgba(229,9,20,0.25)]" : "bg-bg"}`} />
+                <time className="text-[11px] font-bold uppercase tracking-[0.14em] text-muted">{item.year}</time>
+                <b className="mt-0.5 block">{item.title}</b>
+                <span className="text-[13.5px] text-muted">{item.desc}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
     </section>
   );
 }
 
-/* ---------- Originals (projects) ---------- */
-function ProjectCard({ project, onOpen, wide = false }: { project: Project; onOpen: (p: Project) => void; wide?: boolean }) {
+/* ─── Top Picks ─── */
+export function TopPicks() {
   return (
-    <motion.button
-      layoutId={`card-${project.id}`}
-      onClick={() => onOpen(project)}
-      whileHover={{ y: -6 }}
-      className={`group relative flex shrink-0 snap-start flex-col justify-end overflow-hidden rounded-xl border border-line text-left ${wide ? "h-[62vh] w-[min(70vw,860px)]" : "aspect-[16/11] w-[min(86vw,480px)]"}`}
-    >
-      <div className={`absolute inset-0 bg-gradient-to-br ${project.accent} opacity-80 transition group-hover:opacity-100`} />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-      <span className="absolute left-4 top-4 font-display text-2xl tracking-widest text-white/90">
-        <span className="text-accent">O</span> ORIGINAL
-      </span>
-      <span className="absolute right-4 top-4 rounded bg-black/50 px-2 py-0.5 text-xs">{project.date}</span>
-      <div className="relative p-5">
-        <p className="text-xs uppercase tracking-[0.25em] text-slate-300">{project.genre}</p>
-        <h3 className="font-display text-4xl tracking-wide md:text-5xl">{project.title}</h3>
-        <p className="mt-1 text-sm text-slate-200">{project.tagline}</p>
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="picks" data-sec="picks">
+      <div className="eyebrow">Episode 04</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">Top Picks For You</h2>
+      <p className="mb-8 max-w-[620px] text-muted">The five things most worth knowing before you hire.</p>
+      <div className="grid gap-3.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+        {topPicks.map((p, i) => (
+          <div
+            key={p.title}
+            className="group relative min-h-[210px] overflow-hidden rounded-xl border border-line bg-panel p-4 pt-16 transition hover:-translate-y-1.5 hover:border-[#3b4454]"
+          >
+            <div className="outline-num absolute -top-2 left-2.5 font-display text-[104px] leading-none transition group-hover:[-webkit-text-stroke-color:#e50914]">
+              {i + 1}
+            </div>
+            <b className="mb-1.5 block text-base leading-snug">{p.title}</b>
+            <span className="text-[13px] text-muted">{p.desc}</span>
+          </div>
+        ))}
       </div>
-    </motion.button>
+    </section>
   );
 }
 
-function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+/* ─── Originals ─── */
+export function Originals({ onOpen }: { onOpen: (p: Project) => void }) {
+  return (
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="originals" data-sec="originals">
+      <div className="eyebrow">Episode 01</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">My Projects</h2>
+      <p className="mb-8 max-w-[620px] text-muted">Two originals, both live. Open one for the full details.</p>
+      <div className="grid gap-[18px] sm:grid-cols-2 lg:grid-cols-3">
+        {projects.map((p) => (
+          <button
+            key={p.id}
+            onClick={() => onOpen(p)}
+            className={`${p.cls} group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[14px] border border-white/10 p-[22px] text-left transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_26px_60px_rgba(0,0,0,0.7)]`}
+          >
+            <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+            <span className="absolute left-[18px] right-[18px] top-[14px] font-display text-[clamp(90px,11vw,150px)] leading-[0.85] text-white/[0.17] [word-break:break-all]">
+              {p.glyph}
+            </span>
+            <span className="relative text-[11px] font-bold tracking-[0.2em] opacity-85">{p.when} · ORIGINAL</span>
+            <h3 className="disp relative mt-1.5 text-[clamp(34px,4vw,48px)] leading-[0.95]">{p.title}</h3>
+            <p className="relative mt-2 max-w-[34ch] text-[13.5px] text-[#e3e6ec]">{p.line}</p>
+            <span className="relative mt-3 flex flex-wrap gap-1.5">
+              {p.tech.slice(0, 4).map((t) => (
+                <i key={t} className="rounded-full bg-white/[0.16] px-2 py-0.5 text-[11px] not-italic">{t}</i>
+              ))}
+            </span>
+          </button>
+        ))}
+        <button
+          onClick={() => {
+            const btn = document.createElement("button");
+            btn.dataset.contact = "";
+            document.body.appendChild(btn);
+            btn.click();
+            btn.remove();
+          }}
+          className="relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[14px] border-[1.5px] border-dashed border-[#3a4352] p-[22px] text-left transition hover:-translate-y-2"
+          style={{ background: "repeating-linear-gradient(135deg,#10141b,#10141b 14px,#141a23 14px,#141a23 28px)" }}
+        >
+          <span className="text-[11px] font-bold tracking-[0.2em] text-muted">COMING SOON</span>
+          <h3 className="disp mt-1.5 text-[clamp(34px,4vw,48px)] leading-[0.95]">Your project here</h3>
+          <p className="mt-2 text-[13.5px] text-muted">The next episode could be yours. Tell me what you are building.</p>
+        </button>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Moments (Certs) ─── */
+export function Moments() {
+  return (
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="moments" data-sec="moments">
+      <div className="eyebrow">Awards Season</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">Top Moments</h2>
+      <p className="mb-8 max-w-[620px] text-muted">Tests passed, badges earned and certificates finished.</p>
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {certs.map((c) => (
+          <div
+            key={c.t}
+            className="flex flex-col items-center rounded-[14px] border border-gold/45 bg-gradient-to-b from-[#1c1a14] to-[#0f0f10] p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_0_0_1px_#d9ad54,0_24px_60px_rgba(217,173,84,0.18)]"
+          >
+            <span className="text-[34px] leading-none tracking-[-0.15em] text-gold">❨❩</span>
+            <small className="mt-2 block text-[10px] font-bold uppercase tracking-[0.24em] text-gold">{c.eb.toUpperCase()}</small>
+            <h3 className="disp mt-3 text-[32px] leading-[0.95]">{c.t}</h3>
+            <em className="mt-1 text-[11.5px] font-bold uppercase not-italic tracking-[0.1em] text-gold">{c.sub}</em>
+            <p className="mt-3 text-[13px] text-muted">{c.p}</p>
+          </div>
+        ))}
+      </div>
+      <div className="mt-7 text-lg font-bold">
+        Certified · 4 credentials <span className="font-medium text-muted">across testing, SQL, front-end and AI</span>
+      </div>
+    </section>
+  );
+}
+
+/* ─── About ─── */
+export function About({ onContact }: { onContact: () => void }) {
+  return (
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="about" data-sec="about">
+      <div className="eyebrow">Episode 02</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">About Me</h2>
+      <div className="mt-8 grid gap-7 md:grid-cols-[1.2fr_0.8fr]">
+        <div>
+          <p className="mb-4 text-[16.5px] text-[#cdd3dd]">{profile.aboutP1}</p>
+          <p className="mb-4 text-[16.5px] text-[#cdd3dd]">{profile.aboutP2}</p>
+          <div className="mt-6 grid grid-cols-2 gap-3">
+            {stats.map((s) => (
+              <div key={s.label} className="rounded-[10px] border border-line bg-panel px-4 py-3.5">
+                <b className="disp block text-[34px] leading-none text-white">{s.value}</b>
+                <span className="text-xs text-muted">{s.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="self-start rounded-[14px] border border-line bg-panel p-5">
+          <h3 className="mb-3.5 text-lg font-bold">Get in touch</h3>
+          {[
+            { k: "Email", v: profile.email, copy: true },
+            { k: "Phone", v: profile.phone, copy: true },
+            { k: "Based in", v: profile.location },
+            { k: "LinkedIn", v: "Ombaviskar2025", href: profile.linkedin },
+          ].map((row, i) => (
+            <div key={row.k} className={`flex items-center gap-3 py-2.5 text-sm ${i > 0 ? "border-t border-line" : ""}`}>
+              <span className="w-[68px] shrink-0 text-[10.5px] font-bold uppercase tracking-[0.16em] text-muted">{row.k}</span>
+              {row.href ? (
+                <a href={row.href} target="_blank" rel="noopener noreferrer" className="min-w-0 flex-1 break-all text-white no-underline">{row.v}</a>
+              ) : (
+                <span className="min-w-0 flex-1 break-all text-white">{row.v}</span>
+              )}
+              {row.copy && (
+                <button onClick={() => copyText(row.v, `Copied ${row.v}`)} className="shrink-0 rounded-[5px] bg-white/[0.08] px-2.5 py-1 text-[11.5px] font-bold transition hover:bg-white/[0.18]">
+                  Copy
+                </button>
+              )}
+            </div>
+          ))}
+          <div className="mt-4">
+            <button onClick={onContact} className="w-full justify-center rounded-[6px] bg-red px-6 py-3 text-center font-bold text-white transition hover:bg-red2">
+              Let's Build Something
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Skills ─── */
+export function Skills() {
+  const [curCat, setCurCat] = useState(0);
+  const cat = skillCategories[curCat];
+  return (
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="skills" data-sec="skills">
+      <div className="eyebrow">Episode 06</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">My Skill Universe</h2>
+      <p className="mb-8 max-w-[620px] text-muted">Pick a category. Stars mark the stack I use most in shipped projects.</p>
+      <div className="grid gap-6 md:grid-cols-[280px_1fr]">
+        <div className="flex flex-row gap-2 overflow-x-auto pb-1.5 md:flex-col md:gap-1.5 md:overflow-visible md:pb-0" role="tablist">
+          {skillCategories.map((c, i) => (
+            <button
+              key={c.k}
+              onClick={() => setCurCat(i)}
+              role="tab"
+              className={`shrink-0 rounded-lg border-b-[3px] px-4 py-3.5 text-left transition md:border-b-0 md:border-l-[3px] ${
+                i === curCat
+                  ? "border-red bg-panel2 text-fg"
+                  : "border-transparent text-muted hover:bg-panel hover:text-fg"
+              }`}
+            >
+              <b className="disp block text-[26px] leading-tight">{c.k}</b>
+              <span className="hidden text-xs md:block">{c.items.length} skills · {c.d}</span>
+            </button>
+          ))}
+        </div>
+        <div className="min-w-0">
+          <div className="mb-3.5 flex flex-wrap justify-between gap-3.5 text-[13px] text-muted">
+            <b className="text-[15px] text-white">{cat.k}</b>
+            <span>{cat.items.length} skills</span>
+          </div>
+          <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
+            {cat.items.map((s, i) => (
+              <div
+                key={s}
+                className="relative rounded-[10px] border border-line bg-panel p-4 transition hover:-translate-y-0.5 hover:border-red"
+                style={{ animation: `fade 0.4s ${i * 40}ms both` }}
+              >
+                <div className="mb-3 grid h-9 w-9 place-items-center rounded-lg bg-gradient-to-br from-[#6e0a12] to-red text-[13px] font-extrabold">
+                  {initials(s)}
+                </div>
+                <b className="text-sm">{s}</b>
+                {CORE[s] && <span className="absolute right-3 top-3 text-[9.5px] font-extrabold tracking-[0.1em] text-gold">★ CORE</span>}
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Resume ─── */
+export function Resume() {
+  return (
+    <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="resume" data-sec="resume">
+      <div className="eyebrow">The Screenplay</div>
+      <h2 className="disp mt-3 text-[clamp(40px,6.4vw,78px)] text-white">The Full Story</h2>
+      <div className="mt-8 grid gap-5 md:grid-cols-[1.5fr_1fr]">
+        <div className="rounded-[14px] border border-line bg-panel p-[clamp(20px,3vw,34px)]">
+          <h3 className="disp text-[clamp(30px,4vw,44px)]">{profile.name}</h3>
+          <p className="mb-5 text-sm text-muted">Full-stack developer and MCA student · Pune, India</p>
+          <h5 className="mb-2.5 mt-6 text-[11px] font-bold uppercase tracking-[0.24em] text-red2">Projects</h5>
+          {projects.map((p) => (
+            <div key={p.id} className="mb-4">
+              <div className="flex flex-wrap justify-between gap-3">
+                <b className="text-[15.5px]">{p.title}</b>
+                <time className="whitespace-nowrap text-xs text-muted">{p.when}</time>
+              </div>
+              <ul className="mt-1.5 list-disc pl-[18px] text-[13.5px] text-[#c3c9d4]">
+                {p.bullets.map((b) => <li key={b} className="mb-0.5">{b}</li>)}
+              </ul>
+            </div>
+          ))}
+          <h5 className="mb-2.5 mt-6 text-[11px] font-bold uppercase tracking-[0.24em] text-red2">Education</h5>
+          <div className="mb-4">
+            <div className="flex flex-wrap justify-between gap-3"><b className="text-[15.5px]">Master of Computer Applications (MCA)</b><time className="text-xs text-muted">2025 – 2027</time></div>
+            <div className="text-[13.5px] text-muted">M.E. Society's IMCC, Kothrud, Pune</div>
+          </div>
+          <div className="mb-4">
+            <div className="flex flex-wrap justify-between gap-3"><b className="text-[15.5px]">Bachelor of Computer Applications (BCA) · 7.67 / 10</b><time className="text-xs text-muted">2022 – 2025</time></div>
+            <div className="text-[13.5px] text-muted">G.H. Raisoni College of Engineering, Jalgaon</div>
+          </div>
+        </div>
+        <div className="flex flex-col gap-5 self-start">
+          <div className="rounded-[14px] border-0 bg-gradient-to-br from-[#fff7d6] to-[#f2d780] p-5 text-[#1a1405]">
+            <h3 className="disp mb-2 text-[26px] text-[#1a1405]">Every episode, on one page</h3>
+            <p className="mb-4 text-sm text-[#3d3410]">Education, projects, skills and certifications in one place.</p>
+            <button onClick={() => copyText(getResumeText(), "Resume text copied")} className="rounded-[6px] bg-[#1a1405] px-5 py-2 font-bold text-white">Copy resume text</button>
+            <div className="mt-4 grid grid-cols-3 gap-2.5">
+              {[{ v: "2", l: "Projects" }, { v: "4", l: "Certificates" }, { v: "5", l: "Skill areas" }].map((s) => (
+                <div key={s.l} className="rounded-lg bg-black/[0.08] px-1 py-2 text-center">
+                  <b className="disp block text-[30px] leading-none">{s.v}</b>
+                  <span className="text-[10.5px] opacity-75">{s.l}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-[14px] border border-line bg-panel p-5">
+            <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-red2">Skills</h4>
+            {skillCategories.map((c) => (
+              <div key={c.k} className="mb-2 flex gap-2.5 text-[13.5px]">
+                <b className="w-24 shrink-0 text-white">{c.k}</b>
+                <span className="text-[#c3c9d4]">{c.items.join(", ")}</span>
+              </div>
+            ))}
+          </div>
+          <div className="rounded-[14px] border border-line bg-panel p-5">
+            <h4 className="mb-3 text-[11px] font-bold uppercase tracking-[0.22em] text-red2">Certificates</h4>
+            {certs.map((c) => (
+              <div key={c.t} className="mb-2 text-[13.5px]">{c.t} · {c.sub}</div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ─── Project Modal ─── */
+export function ProjectModal({ project, onClose }: { project: Project; onClose: () => void }) {
+  const other = projects.find((p) => p.id !== project.id);
   return (
     <motion.div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+      className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-black/[0.78] px-4 pb-8 pt-[calc(30px+env(safe-area-inset-top,0px))]"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       onClick={onClose}
     >
       <motion.div
-        layoutId={`card-${project.id}`}
+        className="relative w-full max-w-[860px] overflow-hidden rounded-[14px] bg-[#141821] shadow-[0_30px_100px_#000]"
+        initial={{ y: 24, scale: 0.97, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 24, opacity: 0 }}
         onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-label={project.title}
-        className="relative max-h-[92vh] w-full max-w-3xl overflow-y-auto rounded-2xl border border-line bg-panel"
       >
-        <div className={`relative h-52 bg-gradient-to-br ${project.accent} md:h-64`}>
-          <div className="absolute inset-0 bg-gradient-to-t from-panel to-transparent" />
-          <button
-            onClick={onClose}
-            aria-label="Close"
-            className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-black/60 text-lg hover:bg-black"
-          >
-            ✕
-          </button>
-          <div className="absolute bottom-4 left-6">
-            <p className="text-xs uppercase tracking-[0.3em] text-slate-200">{project.genre}</p>
-            <h3 className="font-display text-5xl tracking-wide md:text-6xl">{project.title}</h3>
-          </div>
-        </div>
-        <div className="space-y-6 p-6">
-          <p className="flex items-center gap-3 text-sm text-slate-400">
-            <span className="font-bold text-green-400">New</span> {project.date} · Full-stack · Deployed
-          </p>
-          <p className="text-slate-200">{project.description}</p>
-          <ul className="space-y-3 text-sm text-slate-300">
-            {project.highlights.map((h) => (
-              <li key={h} className="flex gap-3">
-                <span className="mt-1 text-accent">▸</span>
-                <span>{h}</span>
-              </li>
-            ))}
-          </ul>
-          <div className="flex flex-wrap gap-2">
-            {project.stack.map((s) => (
-              <Chip key={s}>{s}</Chip>
-            ))}
-          </div>
-          {(project.live || project.repo) && (
-            <div className="flex gap-3 pt-2">
-              {project.live && (
-                <a href={project.live} target="_blank" rel="noreferrer" className="rounded-md bg-white px-5 py-2 text-sm font-bold text-black hover:bg-accent">
-                  ▶ Watch live
-                </a>
-              )}
-              {project.repo && (
-                <a href={project.repo} target="_blank" rel="noreferrer" className="rounded-md border border-line px-5 py-2 text-sm font-semibold hover:border-accent">
-                  Source code
-                </a>
-              )}
+        <button onClick={onClose} className="absolute right-3 top-3 z-[3] grid h-9 w-9 place-items-center rounded-full bg-black/70 text-lg" aria-label="Close">✕</button>
+        <div className={`${project.cls} relative flex aspect-[16/8] items-end p-6`}>
+          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#141821] via-transparent to-transparent" />
+          <div className="relative z-[2]">
+            <h2 className="disp text-[clamp(40px,7vw,76px)] text-white">{project.title}</h2>
+            <div className="mt-3 flex flex-wrap gap-3">
+              <a href={project.link} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-[6px] bg-fg px-5 py-2.5 font-bold text-black transition hover:bg-[#cfcfcf]">
+                <svg viewBox="0 0 24 24" fill="currentColor" className="h-[18px] w-[18px]"><path d="M7 4v16l13-8z" /></svg>
+                {project.linkLabel}
+              </a>
             </div>
-          )}
+          </div>
         </div>
+        <div className="grid gap-6 p-6 sm:grid-cols-[1.6fr_1fr]">
+          <ul className="list-disc pl-[18px] text-[#cdd3dd]">
+            {project.bullets.map((b) => <li key={b} className="mb-2">{b}</li>)}
+          </ul>
+          <div className="text-[13px] text-muted">
+            <p className="mb-3"><b className="font-semibold text-white">Released:</b> {project.when.charAt(0) + project.when.slice(1).toLowerCase()}</p>
+            <p className="mb-3"><b className="font-semibold text-white">Role:</b> {project.role}</p>
+            <p className="mb-1.5"><b className="font-semibold text-white">Stack:</b></p>
+            <div className="flex flex-wrap gap-1.5">
+              {project.tech.map((t) => <i key={t} className="rounded-full bg-white/[0.08] px-2.5 py-0.5 text-xs not-italic text-[#e5e8ee]">{t}</i>)}
+            </div>
+          </div>
+        </div>
+        {other && (
+          <div className="px-6 pb-6">
+            <h4 className="mb-3 text-lg font-bold">More like this</h4>
+            <button
+              onClick={() => { onClose(); setTimeout(() => document.getElementById("originals")?.scrollIntoView({ behavior: "smooth" }), 300); }}
+              className={`${other.id === "ruh" ? "g1" : "g6"} relative flex aspect-[16/10] w-full max-w-[320px] flex-col justify-end overflow-hidden rounded-[10px] border border-white/[0.08] p-4 text-left`}
+            >
+              <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] opacity-85">ORIGINAL · {other.when}</span>
+              <span className="disp mt-1 text-[30px] leading-none">{other.title}</span>
+              <span className="mt-1 text-xs opacity-80">{other.line}</span>
+            </button>
+          </div>
+        )}
       </motion.div>
     </motion.div>
   );
 }
 
-function PinnedRail({ onOpen }: { onOpen: (p: Project) => void }) {
-  const sectionRef = useRef<HTMLElement>(null);
-  const trackRef = useRef<HTMLDivElement>(null);
-  const [dist, setDist] = useState(0);
-  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end end"] });
-  const x = useTransform(scrollYProgress, [0, 1], [0, -dist]);
+/* ─── Contact Modal ─── */
+export function ContactModal({ onClose }: { onClose: () => void }) {
+  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [msg, setMsg] = useState("");
+
+  const body = `Hi Om,\n\n${msg || "I'd like to talk about a project."}\n\n${name || "(your name)"}${email ? "\n" + email : ""}`;
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-black/[0.78] p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <motion.div
+        className="relative w-full max-w-[520px] rounded-[14px] bg-[#141821] p-[30px] shadow-[0_30px_100px_#000]"
+        initial={{ y: 24, scale: 0.97, opacity: 0 }}
+        animate={{ y: 0, scale: 1, opacity: 1 }}
+        exit={{ y: 24, opacity: 0 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={onClose} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-lg" aria-label="Close">✕</button>
+        <h2 className="disp text-[46px]">Let's Build</h2>
+        <p className="mb-5 text-muted">Tell me what you're making. Your message is written below and you can copy it to email.</p>
+        {!submitted ? (
+          <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+            <div className="mb-3.5 flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted">Your name</label>
+              <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="name" />
+            </div>
+            <div className="mb-3.5 flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted">Your email</label>
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="email" />
+            </div>
+            <div className="mb-3.5 flex flex-col gap-1.5">
+              <label className="text-xs font-semibold text-muted">Message</label>
+              <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={4} placeholder="I'd like to talk about…" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" />
+            </div>
+            <button type="submit" className="rounded-[6px] bg-red px-6 py-3 font-bold text-white transition hover:bg-red2">Prepare message</button>
+          </form>
+        ) : (
+          <div className="mt-4 text-sm">
+            <p className="mb-2 text-muted">Send this to <b className="text-white">{profile.email}</b></p>
+            <textarea readOnly value={body} rows={6} className="mb-2.5 w-full rounded-lg border border-line bg-[#0b0e14] p-3 text-white" />
+            <div className="flex flex-wrap gap-2.5">
+              <button onClick={() => copyText(body, "Message copied")} className="rounded-[6px] bg-[rgba(109,109,110,0.55)] px-5 py-2.5 font-bold text-white">Copy message</button>
+              <a href={`mailto:${profile.email}?subject=${encodeURIComponent("Let's build something")}&body=${encodeURIComponent(body)}`} className="rounded-[6px] bg-[rgba(109,109,110,0.55)] px-5 py-2.5 font-bold text-white no-underline">Open in mail app</a>
+            </div>
+          </div>
+        )}
+      </motion.div>
+    </motion.div>
+  );
+}
+
+/* ─── Search Modal ─── */
+export function SearchModal({ onClose, onOpenProject }: { onClose: () => void; onOpenProject: (p: Project) => void }) {
+  const [q, setQ] = useState("");
+  const [sel, setSel] = useState(0);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  type SearchItem = { k: string; t: string; x: string; action: () => void };
+  const index: SearchItem[] = [];
+  episodes.forEach((e) => index.push({ k: "Episode", t: e.t, x: e.d, action: () => { onClose(); setTimeout(() => document.getElementById(e.s)?.scrollIntoView({ behavior: "smooth" }), 60); } }));
+  projects.forEach((p) => index.push({ k: "Project", t: p.title, x: p.tech.join(" "), action: () => { onClose(); setTimeout(() => onOpenProject(p), 60); } }));
+  skillCategories.forEach((c) => c.items.forEach((s) => index.push({ k: "Skill", t: s, x: c.k, action: () => { onClose(); setTimeout(() => document.getElementById("skills")?.scrollIntoView({ behavior: "smooth" }), 60); } })));
+  certs.forEach((c) => index.push({ k: "Certificate", t: `${c.t} · ${c.sub}`, x: "", action: () => { onClose(); setTimeout(() => document.getElementById("moments")?.scrollIntoView({ behavior: "smooth" }), 60); } }));
+
+  const ql = q.trim().toLowerCase();
+  const results = index.filter((i) => !ql || `${i.t} ${i.x} ${i.k}`.toLowerCase().includes(ql)).slice(0, 30);
+
+  useEffect(() => { inputRef.current?.focus(); }, []);
+
+  const pick = (i: number) => { results[i]?.action(); };
+
+  return (
+    <motion.div
+      className="fixed inset-0 z-[90] flex items-start justify-center overflow-y-auto bg-black/[0.78] pt-[12vh]"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <div className="w-full max-w-[640px] overflow-hidden rounded-[14px] border border-line bg-[#141821] shadow-[0_30px_100px_#000]" onClick={(e) => e.stopPropagation()}>
+        <input
+          ref={inputRef}
+          value={q}
+          onChange={(e) => { setQ(e.target.value); setSel(0); }}
+          onKeyDown={(e) => {
+            if (e.key === "ArrowDown") { e.preventDefault(); setSel((s) => Math.min(s + 1, results.length - 1)); }
+            else if (e.key === "ArrowUp") { e.preventDefault(); setSel((s) => Math.max(s - 1, 0)); }
+            else if (e.key === "Enter") pick(sel);
+          }}
+          placeholder="Search projects, skills, certificates…"
+          className="w-full border-b border-line bg-transparent px-5 py-4 text-lg text-white outline-0"
+          autoComplete="off"
+        />
+        <div className="max-h-[55vh] overflow-y-auto">
+          {results.length > 0 ? results.map((r, i) => (
+            <button
+              key={`${r.k}-${r.t}-${i}`}
+              onClick={() => pick(i)}
+              className={`flex w-full items-center gap-3 px-5 py-3 text-left ${i === sel ? "bg-panel2" : "hover:bg-panel2"}`}
+            >
+              <em className="w-[72px] shrink-0 text-[10px] font-extrabold uppercase tracking-[0.16em] text-red2 not-italic">{r.k}</em>
+              <span>{r.t}</span>
+            </button>
+          )) : (
+            <div className="p-5 text-muted">Nothing found. Try "React" or "JWT".</div>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
+/* ─── Trailer ─── */
+export function Trailer({ onClose }: { onClose: () => void }) {
+  const [i, setI] = useState(0);
+  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
   useEffect(() => {
-    const measure = () => {
-      const t = trackRef.current;
-      if (t) setDist(Math.max(0, t.scrollWidth - window.innerWidth));
+    const run = (idx: number) => {
+      if (idx >= trailerScenes.length) { onClose(); return; }
+      setI(idx);
+      timers.current.push(setTimeout(() => run(idx + 1), 2400));
     };
-    measure();
-    window.addEventListener("resize", measure);
-    return () => window.removeEventListener("resize", measure);
-  }, []);
+    run(0);
+    return () => timers.current.forEach(clearTimeout);
+  }, [onClose]);
 
+  const scene = trailerScenes[i] ?? trailerScenes[0];
   return (
-    <section id="originals" ref={sectionRef} style={{ height: `calc(100vh + ${dist}px)` }} className="relative">
-      <div className="sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
-        <div className={wrap + " w-full"}>
-          <SectionTitle kicker="Only on this portfolio" title="Originals" />
-        </div>
-        <motion.div ref={trackRef} style={{ x }} className="flex w-max gap-6 pl-10 pr-[12vw] lg:pl-[max(2.5rem,calc((100vw-80rem)/2+2.5rem))]">
-          {projects.map((p) => (
-            <ProjectCard key={p.id} project={p} onOpen={onOpen} wide />
-          ))}
-        </motion.div>
-        <p className="mt-4 pl-10 text-xs uppercase tracking-[0.3em] text-slate-500 lg:pl-[max(2.5rem,calc((100vw-80rem)/2+2.5rem))]">
-          Keep scrolling →
-        </p>
-      </div>
-    </section>
-  );
-}
-
-export function Originals({ onOpen }: { onOpen: (p: Project) => void }) {
-  const desktop = useDesktop();
-  const fine = useFinePointer();
-  const reduce = useReducedMotionPref();
-  if (desktop && fine && !reduce) return <PinnedRail onOpen={onOpen} />;
-  return (
-    <section id="originals" className="py-20">
-      <div className={wrap}>
-        <SectionTitle kicker="Only on this portfolio" title="Originals" />
-      </div>
-      <div className={`rail ${wrap} flex snap-x snap-mandatory gap-5 overflow-x-auto pb-4`}>
-        {projects.map((p) => (
-          <ProjectCard key={p.id} project={p} onOpen={onOpen} />
-        ))}
-      </div>
-    </section>
-  );
-}
-
-export { ProjectModal };
-
-/* ---------- Journey (seasons & episodes) ---------- */
-export function Journey() {
-  const [active, setActive] = useState(0);
-  const season = seasons[active];
-  return (
-    <section id="journey" className={`${wrap} py-20`}>
-      <SectionTitle kicker="Binge-worthy" title="My Journey" />
-      <div className="mb-8 flex flex-wrap gap-2">
-        {seasons.map((s, i) => (
-          <button
-            key={s.number}
-            onClick={() => setActive(i)}
-            className={`rounded-full border px-5 py-2 text-sm font-semibold transition ${
-              i === active ? "border-accent bg-accent text-black" : "border-line text-slate-300 hover:border-slate-500"
-            }`}
-          >
-            Season {s.number}
-          </button>
-        ))}
-      </div>
-      <p className="mb-6 text-slate-400">
-        <span className="font-display text-3xl tracking-wide text-white">{season.title}</span> · {season.years}
-      </p>
-      <ol className="space-y-3">
-        {season.episodes.map((ep, i) => (
-          <motion.li
-            key={`${season.number}-${ep.title}`}
-            initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: i * 0.08 }}
-            className="flex items-center gap-5 rounded-xl border border-line bg-panel p-4 transition hover:border-accent/60 md:p-5"
-          >
-            <span className="w-10 text-center font-display text-4xl text-slate-600">{i + 1}</span>
-            <div className="min-w-0">
-              <h4 className="font-semibold text-white">{ep.title}</h4>
-              <p className="text-xs text-accent">{ep.meta}</p>
-              <p className="mt-1 text-sm text-slate-400">{ep.blurb}</p>
-            </div>
-          </motion.li>
-        ))}
-      </ol>
-    </section>
-  );
-}
-
-/* ---------- Top picks ---------- */
-export function TopPicks() {
-  return (
-    <section className="py-20">
-      <div className={wrap}>
-        <SectionTitle kicker="Trending in my stack" title="Top 10 Skills" />
-      </div>
-      <div className={`rail ${wrap} flex gap-2 overflow-x-auto pb-4`}>
-        {topPicks.map((skill, i) => (
-          <motion.div
-            key={skill}
-            whileHover={{ y: -6 }}
-            className="relative flex shrink-0 items-end"
-          >
-            <span className="outline-num font-display text-[9rem] leading-none md:text-[11rem]">{i + 1}</span>
-            <div className="-ml-5 mb-2 flex h-36 w-28 items-end rounded-lg border border-line bg-gradient-to-br from-panel to-ink p-3 md:h-44 md:w-36">
-              <span className="text-sm font-bold leading-tight">{skill}</span>
-            </div>
-          </motion.div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Skills ---------- */
-export function Skills() {
-  const [selected, setSelected] = useState<string | null>(null);
-  return (
-    <section id="skills" className={`${wrap} py-20`}>
-      <SectionTitle kicker="Browse by genre" title="Skills" />
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {skillGroups.map((g, i) => (
-          <Reveal key={g.genre} delay={i * 0.05}>
-            <Tilt className="h-full">
-              <div className="h-full rounded-xl border border-line bg-panel p-5 transition hover:border-accent/60">
-                <p className="mb-3 flex items-center gap-3 font-display text-3xl tracking-wide">
-                  <span className="text-accent">{g.icon}</span> {g.genre}
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {g.skills.map((s) => (
-                    <button
-                      key={s}
-                      onClick={() => setSelected(selected === s ? null : s)}
-                      className={`rounded-full border px-3 py-1 text-xs font-medium transition ${
-                        selected === s ? "border-accent bg-accent text-black" : "border-line bg-white/5 text-slate-200 hover:border-accent/60"
-                      }`}
-                    >
-                      {s}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </Tilt>
-          </Reveal>
-        ))}
-      </div>
-      <div className="mt-6 min-h-14 rounded-xl border border-dashed border-line p-4 text-sm text-slate-400">
-        {selected ? (
-          <>
-            <span className="font-semibold text-white">{selected}</span> — where it's used:{" "}
-            <span className="text-slate-300">{skillEvidence[selected] ?? "Add a note in skillEvidence."}</span>
-          </>
-        ) : (
-          "Tap a skill to see where it shows up in my work."
-        )}
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Certifications ---------- */
-export function Certs() {
-  return (
-    <section className={`${wrap} py-20`}>
-      <SectionTitle kicker="Award-winning" title="Certifications" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {certifications.map((c, i) => (
-          <Reveal key={c.title} delay={i * 0.06}>
-            <Tilt className="h-full"><div className="flex h-full flex-col justify-between rounded-xl border border-line bg-gradient-to-br from-panel to-ink p-5">
-              <span className="mb-6 text-3xl text-gold">★</span>
-              <div>
-                <h4 className="font-semibold leading-snug">{c.title}</h4>
-                <p className="mt-1 text-xs uppercase tracking-widest text-slate-500">{c.issuer}</p>
-              </div>
-            </div></Tilt>
-          </Reveal>
-        ))}
-      </div>
-    </section>
-  );
-}
-
-/* ---------- Final CTA ---------- */
-export function FinalCTA({ onResume }: { onResume: () => void }) {
-  const links = [
-    { label: "Email", href: `mailto:${profile.email}`, value: profile.email },
-    { label: "LinkedIn", href: profile.linkedin, value: "Connect" },
-    { label: "GitHub", href: profile.github, value: `@${profile.githubHandle}` },
-    { label: "Phone", href: `tel:${profile.phone.replace(/\s/g, "")}`, value: profile.phone },
-  ];
-  return (
-    <section id="contact" className="relative overflow-hidden py-28 text-center">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,211,238,0.14),transparent_65%)]" />
-      <div className={`${wrap} relative`}>
-        <Reveal>
-          <h2 className="font-display text-6xl tracking-wide md:text-9xl">
-            TO BE <span className="text-accent">CONTINUED…</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-slate-400">
-            Hiring, collaborating, or just want to say hi? Season 4 starts with a message.
-          </p>
-        </Reveal>
-        <div className="mx-auto mt-10 grid max-w-3xl gap-3 sm:grid-cols-2">
-          {links.map((l) => (
-            <a
-              key={l.label}
-              href={l.href}
-              target={l.href.startsWith("http") ? "_blank" : undefined}
-              rel="noreferrer"
-              className="rounded-xl border border-line bg-panel px-5 py-4 text-left transition hover:border-accent"
-            >
-              <p className="text-xs uppercase tracking-widest text-slate-500">{l.label}</p>
-              <p className="mt-0.5 font-semibold">{l.value}</p>
-            </a>
-          ))}
-        </div>
-        <button
-          onClick={onResume}
-          className="mt-8 inline-block rounded-md bg-white px-8 py-3 font-bold text-black transition hover:bg-accent"
+    <motion.div
+      className="fixed inset-0 z-[110] flex cursor-pointer items-center justify-center bg-black"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      onClick={onClose}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={i}
+          className="px-2.5 text-center"
+          initial={{ opacity: 0, scale: 1.15, filter: "blur(10px)" }}
+          animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          exit={{ opacity: 0, scale: 0.97 }}
+          transition={{ duration: 0.5 }}
         >
-          ▶ View Resume
-        </button>
-        <p className="mt-16 text-xs text-slate-600">
-          © {new Date().getFullYear()} {profile.name}. A fictional streaming-style portfolio, not affiliated with any streaming service.
-        </p>
+          <small className="mb-3.5 block text-[clamp(11px,1.6vw,15px)] font-bold uppercase tracking-[0.4em] text-red2">{scene[0]}</small>
+          <div className="disp text-[clamp(44px,10vw,120px)] leading-[0.95] text-white">{scene[1]}</div>
+        </motion.div>
+      </AnimatePresence>
+      <div className="absolute bottom-6 right-5 text-xs uppercase tracking-[0.14em] text-muted">Click to skip</div>
+    </motion.div>
+  );
+}
+
+/* ─── Footer ─── */
+export function Footer() {
+  return (
+    <footer className="border-t border-line px-4 pb-10 pt-12 text-center text-[13px] text-muted md:px-6">
+      <div className="mb-2 flex items-baseline justify-center gap-1.5 font-display text-[30px] tracking-[0.06em] text-red">
+        OM<small className="font-sans text-xs font-bold tracking-[0.2em] text-fg">SERIES</small>
       </div>
-    </section>
+      <div>Designed and built by Om Baviskar · Pune, India · Press <b className="text-white">/</b> to search</div>
+    </footer>
   );
 }
