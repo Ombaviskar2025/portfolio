@@ -79,15 +79,15 @@ export const topPicks: TopPick[] = [
   { title: "SQL Gold Badge", desc: "HackerRank SQL Gold, plus MySQL query optimisation." }
 ];
 
-export type Episode = { n: string; t: string; d: string; g: string; s: string };
+export type Episode = { n: string; t: string; d: string; g: string; s: string; img: string };
 export const episodes: Episode[] = [
-  { n: "01", t: "My Projects", d: "Two live originals", g: "g1", s: "originals" },
-  { n: "02", t: "About Me", d: "Who is behind the code", g: "g2", s: "about" },
-  { n: "03", t: "My Journey", d: "BCA to MCA, season by season", g: "g3", s: "journey" },
-  { n: "04", t: "Top Picks", d: "Five things to know first", g: "g4", s: "picks" },
-  { n: "05", t: "Top Moments", d: "Badges and certificates", g: "g5", s: "moments" },
-  { n: "06", t: "Skill Universe", d: "Languages to DevOps", g: "g6", s: "skills" },
-  { n: "07", t: "The Full Story", d: "Resume on one page", g: "g7", s: "resume" }
+  { n: "01", t: "My Projects", d: "Two live originals", g: "g1", s: "originals", img: "/assets/episodes/ep1.jpg" },
+  { n: "02", t: "About Me", d: "Who is behind the code", g: "g2", s: "about", img: "/assets/episodes/ep2.jpg" },
+  { n: "03", t: "My Journey", d: "BCA to MCA, season by season", g: "g3", s: "journey", img: "/assets/episodes/ep3.jpg" },
+  { n: "04", t: "Top Picks", d: "Five things to know first", g: "g4", s: "picks", img: "/assets/episodes/ep4.jpg" },
+  { n: "05", t: "Top Moments", d: "Badges and certificates", g: "g5", s: "moments", img: "/assets/episodes/ep5.jpg" },
+  { n: "06", t: "Skill Universe", d: "Languages to DevOps", g: "g6", s: "skills", img: "/assets/episodes/ep6.jpg" },
+  { n: "07", t: "The Full Story", d: "Resume on one page", g: "g7", s: "resume", img: "/assets/episodes/ep7.jpg" }
 ];
 
 export type SectionId = "journey" | "picks" | "originals" | "moments" | "about" | "skills" | "resume";

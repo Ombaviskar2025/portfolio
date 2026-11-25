@@ -55,11 +55,18 @@ export default function ContinueWatching() {
               }}
               className={`${ep.g} group/card relative flex aspect-[16/10] w-[72vw] shrink-0 snap-start flex-col justify-end overflow-hidden rounded-[10px] border border-white/[0.08] p-4 text-left transition-all duration-200 sm:w-[260px] md:w-[280px] lg:w-[300px] hover:z-[3] hover:scale-[1.06] hover:shadow-[0_18px_50px_rgba(0,0,0,0.7),0_0_0_2px_rgba(255,255,255,0.7)]`}
             >
-              <span className="absolute right-3 top-3 grid h-[30px] w-[30px] place-items-center rounded-full border-[1.5px] border-white/70 bg-black/55 text-[11px] opacity-0 transition group-hover/card:opacity-100">▶</span>
-              <span className="text-[10.5px] font-bold uppercase tracking-[0.22em] opacity-85">EPISODE {ep.n}</span>
-              <span className="disp mt-1 text-[30px] leading-none">{ep.t}</span>
-              <span className="mt-1 text-xs opacity-80">{ep.d}</span>
-              <span className="absolute inset-x-0 bottom-0 h-1 bg-white/20">
+              <img
+                src={ep.img}
+                alt={ep.t}
+                loading="lazy"
+                className="pointer-events-none absolute inset-0 h-full w-full object-cover transition-transform duration-300 group-hover/card:scale-105"
+              />
+              <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/15" />
+              <span className="relative z-[1] ml-auto mb-auto grid h-[30px] w-[30px] place-items-center rounded-full border-[1.5px] border-white/70 bg-black/55 text-[11px] opacity-0 transition group-hover/card:opacity-100">▶</span>
+              <span className="relative z-[1] text-[10.5px] font-bold uppercase tracking-[0.22em] opacity-90">EPISODE {ep.n}</span>
+              <span className="disp relative z-[1] mt-1 text-[30px] leading-none">{ep.t}</span>
+              <span className="relative z-[1] mt-1 text-xs opacity-85">{ep.d}</span>
+              <span className="absolute inset-x-0 bottom-0 z-[2] h-1 bg-white/20">
                 <i
                   className="block h-full bg-red transition-[width] duration-500"
                   style={{ width: visited[ep.s] ? "100%" : "0" }}
