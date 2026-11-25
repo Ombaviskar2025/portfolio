@@ -72,5 +72,3 @@ body {
     transition-duration: 0.001ms !important;
   }
 }
-
-html.has-cursor, html.has-cursor * { cursor: none !important; }

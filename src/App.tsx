@@ -13,7 +13,6 @@ import Hero from "./components/Hero";
 import PlayIntro from "./components/PlayIntro";
 import ContinueWatching from "./components/ContinueWatching";
 import ResumeModal from "./components/ResumeModal";
-import { CustomCursor } from "./components/fx";
 import {
   About,
   Certs,
@@ -62,7 +61,6 @@ export default function App() {
 
   return (
     <>
-      <CustomCursor />
       <AnimatePresence>
         {stage === "opening" && <OpeningSequence key="opening" onDone={() => setStage("profile")} />}
         {stage === "profile" && (
