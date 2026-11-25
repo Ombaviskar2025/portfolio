@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import { profile, type ViewerProfile } from "../data/portfolio";
 
@@ -11,32 +11,8 @@ export default function Hero({
   onPlay: () => void;
   onSecondary: () => void;
 }) {
-  const [hasPhoto, setHasPhoto] = useState(() => !!localStorage.getItem("om-photo"));
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    if (!f) return;
-    const r = new FileReader();
-    r.onload = () => {
-      const img = new Image();
-      img.onload = () => {
-        const max = 900;
-        const s = Math.min(1, max / Math.max(img.width, img.height));
-        const c = document.createElement("canvas");
-        c.width = Math.round(img.width * s);
-        c.height = Math.round(img.height * s);
-        c.getContext("2d")!.drawImage(img, 0, 0, c.width, c.height);
-        localStorage.setItem("om-photo", c.toDataURL("image/jpeg", 0.86));
-        setHasPhoto(true);
-      };
-      img.src = r.result as string;
-    };
-    r.readAsDataURL(f);
-    e.target.value = "";
-  };
-
-  const photoSrc = hasPhoto ? localStorage.getItem("om-photo") : null;
+  const [imgError, setImgError] = useState(false);
+  const fallbackPhoto = typeof window !== "undefined" ? localStorage.getItem("om-photo") : null;
 
   return (
     <header
@@ -90,25 +66,24 @@ export default function Hero({
 
         <div className="justify-self-center md:justify-self-end">
           <div
-            className="relative aspect-[4/5] w-[min(100%,400px)] cursor-pointer overflow-hidden rounded-[18px] shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06),0_0_90px_rgba(229,9,20,0.28)]"
+            className="relative aspect-[4/5] w-[min(100%,400px)] overflow-hidden rounded-[18px] shadow-[0_30px_80px_rgba(0,0,0,0.6),0_0_0_1px_rgba(255,255,255,0.06),0_0_90px_rgba(229,9,20,0.28)]"
             style={{ background: "linear-gradient(160deg, #1a0f14, #2a0c12)" }}
-            onClick={() => fileRef.current?.click()}
-            role="button"
-            tabIndex={0}
-            aria-label="Add your photo"
           >
-            {photoSrc ? (
-              <img src={photoSrc} alt={profile.name} className="h-full w-full object-cover object-[center_top]" />
+            {!imgError ? (
+              <img
+                src="/assets/portrait.jpg"
+                alt={profile.name}
+                onError={() => setImgError(true)}
+                className="h-full w-full object-cover object-[center_top]"
+              />
+            ) : fallbackPhoto ? (
+              <img src={fallbackPhoto} alt={profile.name} className="h-full w-full object-cover object-[center_top]" />
             ) : (
               <div className="t-om flex h-full w-full items-center justify-center font-display text-[clamp(80px,12vw,150px)] tracking-[0.04em] text-white/90">
                 OM
               </div>
             )}
-            <span className={`absolute inset-x-3 bottom-3 rounded-lg bg-black/60 px-3 py-2 text-center text-xs font-semibold backdrop-blur-[6px] transition-opacity ${hasPhoto ? "opacity-0 hover:opacity-100" : "opacity-100"}`}>
-              Click to add your photo
-            </span>
           </div>
-          <input ref={fileRef} type="file" accept="image/*" hidden onChange={handleFileChange} />
         </div>
       </div>
       <div className="absolute bottom-7 right-4 z-[3] max-w-[300px] rounded-lg border border-line bg-[rgba(20,24,32,0.85)] px-3.5 py-2.5 text-xs text-[#cdd3dd] backdrop-blur-lg max-md:static max-md:mx-4 max-md:mt-5 max-md:max-w-none">
