@@ -66,7 +66,7 @@ export default function App() {
   const sections: Record<SectionId, ReactNode> = {
     journey: <Journey key="journey" />,
     picks: <TopPicks key="picks" />,
-    originals: <Originals key="originals" onOpen={setProject} />,
+    originals: <Originals key="originals" onOpen={setProject} onContact={() => setContact(true)} />,
     moments: <Moments key="moments" />,
     about: <About key="about" onContact={() => setContact(true)} />,
     skills: <Skills key="skills" />,

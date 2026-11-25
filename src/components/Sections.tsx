@@ -136,7 +136,7 @@ export function TopPicks() {
 }
 
 /* ─── Originals ─── */
-export function Originals({ onOpen }: { onOpen: (p: Project) => void }) {
+export function Originals({ onOpen, onContact }: { onOpen: (p: Project) => void; onContact: () => void }) {
   return (
     <section className={`${wrap} py-[clamp(44px,7vw,84px)]`} id="originals" data-sec="originals">
       <div className="eyebrow">Episode 01</div>
@@ -147,7 +147,7 @@ export function Originals({ onOpen }: { onOpen: (p: Project) => void }) {
           <button
             key={p.id}
             onClick={() => onOpen(p)}
-            className={`${p.cls} group relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[14px] border border-white/10 p-[22px] text-left transition-all duration-300 hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_26px_60px_rgba(0,0,0,0.7)]`}
+            className={`${p.cls} group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-[14px] border border-white/10 p-[22px] text-left transition-all duration-300 sm:aspect-[3/4] hover:-translate-y-2 hover:scale-[1.02] hover:shadow-[0_26px_60px_rgba(0,0,0,0.7)]`}
           >
             <span className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             <span className="absolute left-[18px] right-[18px] top-[14px] font-display text-[clamp(90px,11vw,150px)] leading-[0.85] text-white/[0.17] [word-break:break-all]">
@@ -164,14 +164,8 @@ export function Originals({ onOpen }: { onOpen: (p: Project) => void }) {
           </button>
         ))}
         <button
-          onClick={() => {
-            const btn = document.createElement("button");
-            btn.dataset.contact = "";
-            document.body.appendChild(btn);
-            btn.click();
-            btn.remove();
-          }}
-          className="relative flex aspect-[3/4] flex-col justify-end overflow-hidden rounded-[14px] border-[1.5px] border-dashed border-[#3a4352] p-[22px] text-left transition hover:-translate-y-2"
+          onClick={onContact}
+          className="relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-[14px] border-[1.5px] border-dashed border-[#3a4352] p-[22px] text-left transition sm:aspect-[3/4] hover:-translate-y-2"
           style={{ background: "repeating-linear-gradient(135deg,#10141b,#10141b 14px,#141a23 14px,#141a23 28px)" }}
         >
           <span className="text-[11px] font-bold tracking-[0.2em] text-muted">COMING SOON</span>
@@ -295,7 +289,7 @@ export function Skills() {
             <b className="text-[15px] text-white">{cat.k}</b>
             <span>{cat.items.length} skills</span>
           </div>
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(150px,1fr))] gap-3">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {cat.items.map((s, i) => (
               <div
                 key={s}
@@ -402,7 +396,7 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
         onClick={(e) => e.stopPropagation()}
       >
         <button onClick={onClose} className="absolute right-3 top-3 z-[3] grid h-9 w-9 place-items-center rounded-full bg-black/70 text-lg" aria-label="Close">✕</button>
-        <div className={`${project.cls} relative flex aspect-[16/8] items-end p-6`}>
+        <div className={`${project.cls} relative flex aspect-[16/11] items-end p-5 sm:aspect-[16/8] sm:p-6`}>
           <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#141821] via-transparent to-transparent" />
           <div className="relative z-[2]">
             <h2 className="disp text-[clamp(40px,7vw,76px)] text-white">{project.title}</h2>
