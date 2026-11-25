@@ -447,12 +447,38 @@ export function ProjectModal({ project, onClose }: { project: Project; onClose: 
 
 /* ─── Contact Modal ─── */
 export function ContactModal({ onClose }: { onClose: () => void }) {
-  const [submitted, setSubmitted] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [msg, setMsg] = useState("");
 
   const body = `Hi Om,\n\n${msg || "I'd like to talk about a project."}\n\n${name || "(your name)"}${email ? "\n" + email : ""}`;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setStatus("sending");
+    try {
+      const res = await fetch(`https://formsubmit.co/ajax/${profile.email}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          name,
+          email,
+          message: msg,
+          _subject: `Portfolio message from ${name}`,
+          _replyto: email,
+        }),
+      });
+      if (!res.ok) throw new Error("Failed to send");
+      setStatus("sent");
+      toast("Message sent!");
+    } catch {
+      setStatus("error");
+    }
+  };
 
   return (
     <motion.div
@@ -471,30 +497,39 @@ export function ContactModal({ onClose }: { onClose: () => void }) {
       >
         <button onClick={onClose} className="absolute right-3 top-3 grid h-9 w-9 place-items-center rounded-full bg-black/70 text-lg" aria-label="Close">✕</button>
         <h2 className="disp text-[46px]">Let's Build</h2>
-        <p className="mb-5 text-muted">Tell me what you're making. Your message is written below and you can copy it to email.</p>
-        {!submitted ? (
-          <form onSubmit={(e) => { e.preventDefault(); setSubmitted(true); }}>
+        <p className="mb-5 text-muted">Tell me what you're making. Send a message directly to {profile.email}.</p>
+        {status === "idle" || status === "sending" ? (
+          <form onSubmit={handleSubmit}>
             <div className="mb-3.5 flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted">Your name</label>
-              <input value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="name" />
+              <input required value={name} onChange={(e) => setName(e.target.value)} className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="name" />
             </div>
             <div className="mb-3.5 flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted">Your email</label>
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="email" />
+              <input required value={email} onChange={(e) => setEmail(e.target.value)} type="email" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" autoComplete="email" />
             </div>
             <div className="mb-3.5 flex flex-col gap-1.5">
               <label className="text-xs font-semibold text-muted">Message</label>
-              <textarea value={msg} onChange={(e) => setMsg(e.target.value)} rows={4} placeholder="I'd like to talk about…" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" />
+              <textarea required value={msg} onChange={(e) => setMsg(e.target.value)} rows={4} placeholder="I'd like to talk about…" className="rounded-lg border border-line bg-[#0b0e14] px-3 py-3 text-white focus:border-transparent focus:outline-2 focus:outline-red" />
             </div>
-            <button type="submit" className="rounded-[6px] bg-red px-6 py-3 font-bold text-white transition hover:bg-red2">Prepare message</button>
+            <button type="submit" disabled={status === "sending"} className="rounded-[6px] bg-red px-6 py-3 font-bold text-white transition hover:bg-red2 disabled:opacity-60">
+              {status === "sending" ? "Sending…" : "Send message"}
+            </button>
           </form>
+        ) : status === "sent" ? (
+          <div className="mt-4 rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-5 text-sm">
+            <p className="font-semibold text-white">Message sent to {profile.email}!</p>
+            <p className="mt-1 text-muted">Thanks for reaching out, {name}. I'll get back to you soon.</p>
+            <button onClick={onClose} className="mt-4 rounded-[6px] bg-white px-5 py-2 font-bold text-black">Done</button>
+          </div>
         ) : (
           <div className="mt-4 text-sm">
-            <p className="mb-2 text-muted">Send this to <b className="text-white">{profile.email}</b></p>
+            <p className="mb-2 text-red2">Could not send automatically. You can copy or send it directly to <b className="text-white">{profile.email}</b>:</p>
             <textarea readOnly value={body} rows={6} className="mb-2.5 w-full rounded-lg border border-line bg-[#0b0e14] p-3 text-white" />
             <div className="flex flex-wrap gap-2.5">
               <button onClick={() => copyText(body, "Message copied")} className="rounded-[6px] bg-[rgba(109,109,110,0.55)] px-5 py-2.5 font-bold text-white">Copy message</button>
-              <a href={`mailto:${profile.email}?subject=${encodeURIComponent("Let's build something")}&body=${encodeURIComponent(body)}`} className="rounded-[6px] bg-[rgba(109,109,110,0.55)] px-5 py-2.5 font-bold text-white no-underline">Open in mail app</a>
+              <a href={`mailto:${profile.email}?subject=${encodeURIComponent("Let's build something")}&body=${encodeURIComponent(body)}`} className="rounded-[6px] bg-red px-5 py-2.5 font-bold text-white no-underline">Open in mail app</a>
+              <button onClick={() => setStatus("idle")} className="rounded-[6px] border border-line px-4 py-2.5 font-semibold text-muted hover:text-white">Try again</button>
             </div>
           </div>
         )}

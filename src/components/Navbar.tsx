@@ -64,7 +64,14 @@ export default function Navbar({
         }`}
       >
         <div className="mx-auto flex h-16 max-w-[1280px] items-center gap-5 px-4 md:px-6">
-          <a href="#home" className="flex items-baseline gap-1.5 whitespace-nowrap font-display text-[30px] tracking-[0.06em] text-red no-underline">
+          <a
+            href="/"
+            onClick={(e) => {
+              e.preventDefault();
+              window.location.href = "/";
+            }}
+            className="flex items-baseline gap-1.5 whitespace-nowrap font-display text-[30px] tracking-[0.06em] text-red no-underline"
+          >
             OM<small className="font-sans text-xs font-bold tracking-[0.2em] text-fg">SERIES</small>
           </a>
           <div className={`${open ? "flex" : "hidden"} absolute left-0 right-0 top-16 flex-col border-b border-line bg-[rgba(7,9,13,0.98)] px-4 pb-4 md:static md:flex md:flex-1 md:flex-row md:gap-1 md:border-0 md:bg-transparent md:p-0`}>
